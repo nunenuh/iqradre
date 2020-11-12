@@ -1,3 +1,12 @@
+# My Custom gitignore
+.idea
+testnote/*
+# notebook/*
+*.egg-info/*
+.tox/*
+
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
