@@ -46,10 +46,24 @@ def batch_box_xyminmax_to_coordinates(boxes, to_int=False):
     return four_points
 
 
-def box_coordinate_to_xywh(box):
-    xmin, ymin, xmax, ymax = box_coordinate_to_xyminmax(box)
+def box_coordinate_to_xywh(box, to_int=False):
+    xmin, ymin, xmax, ymax = box_coordinate_to_xyminmax(box, to_int=to_int)
     return xmin, ymin, xmax - xmin, ymax - ymin
 
+def batch_box_coordinate_to_xywh(boxes, to_int=False):
+    xywh_boxes = []
+    for box in boxes:
+        res = box_coordinate_to_xywh(box, to_int=to_int)
+        res = np.array(res).astype(np.float32)
+        xywh_boxes.append(res)
+
+    xywh_boxes = np.array(xywh_boxes)
+    if to_int:
+        xywh_boxes = xywh_boxes.astype(np.int32)
+    else:
+        xywh_boxes = xywh_boxes.astype(np.float32)
+        
+    return xywh_boxes
 
 def box_pad(box, factor=0.1, to_int=True):
     xmin, ymin, xmax, ymax = box

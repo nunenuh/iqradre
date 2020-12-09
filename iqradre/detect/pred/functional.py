@@ -4,8 +4,8 @@ import torch
 from skimage import io
 from torchvision.transforms import functional as F
 
+from ..ops import box_ops
 from ..utils import craft_utils, imgproc
-from ..utils import box_utils
 
 
 def load_image(path):
@@ -93,7 +93,7 @@ def boxes_to_images(img, boxes, use_pad=True, pad_factor=0.05):
     images_patch = []
     for i, box in enumerate(boxes):
         poly = np.array(box).astype(np.int32)
-        bbox = box_utils.box_bounds(poly, use_pad=use_pad, pad_factor=pad_factor)
+        bbox = box_ops.box_bounds(poly, use_pad=use_pad, pad_factor=pad_factor)
         xmin, ymin, xmax, ymax = bbox
         img_patch = img[ymin:ymax, xmin:xmax]
         images_patch.append(img_patch)
@@ -115,12 +115,12 @@ def char_bbox(score, use_pad=True, pad=0.19, low_text=0.3):
         x, y, w, h = cv.boundingRect(c)
         if use_pad:
             box = x, y, x + w, y + h
-            xmin, ymin, xmax, ymax = box_utils.box_pad(box, pad)
+            xmin, ymin, xmax, ymax = box_ops.box_pad(box, pad)
         else:
             box = x, y, x + w, y + h
             xmin, ymin, xmax, ymax = box
 
-        # tl, tr, br, bl = box_utils.box_order(box)
+        # tl, tr, br, bl = box_ops.box_order(box)
         tl, tr, br, bl = (xmin, ymin), (xmax, ymin), (xmax, ymax), (xmin, ymax)
         #
         boxes.append(np.array([tl, tr, br, bl]).astype(np.float32))
@@ -136,7 +136,7 @@ def char_bbox(score, use_pad=True, pad=0.19, low_text=0.3):
 # change from four coordinat to xyminmax
 def sort_boxes_lrtb(boxes, pad=10):
     xmin_index, ymin_index, xmax_index, ymax_index = 0, 1, 2, 3
-    boxes_xymm = box_utils.batch_box_coordinate_to_xyminmax(boxes)
+    boxes_xymm = box_ops.batch_box_coordinate_to_xyminmax(boxes)
     boxes_sorted_xymin = sorted(boxes_xymm.tolist(), key=lambda box: box[ymin_index])
 
     lymin = np.min(boxes_xymm[:, ymin_index])  # sum minus of ymin
@@ -162,14 +162,14 @@ def sort_boxes_lrtb(boxes, pad=10):
 
     # assert len(boxes)==len(boxes_line), f"len of boxes ({len(boxes)}) in is not the same with box out ({len(boxes_line)})!"
 
-    boxes = box_utils.batch_box_xyminmax_to_coordinates(boxes_line)
+    boxes = box_ops.batch_box_xyminmax_to_coordinates(boxes_line)
 
     return boxes
 
 
 def sort_boxes_lrtb_segmented(boxes, pad=10):
     xmin_index, ymin_index, xmax_index, ymax_index = 0, 1, 2, 3
-    boxes_xymm = box_utils.batch_box_coordinate_to_xyminmax(boxes)
+    boxes_xymm = box_ops.batch_box_coordinate_to_xyminmax(boxes)
     boxes_sorted_xymin = sorted(boxes_xymm.tolist(), key=lambda box: box[ymin_index])
 
     lymin = np.min(boxes_xymm[:, ymin_index])  # sum minus of ymin
@@ -183,7 +183,7 @@ def sort_boxes_lrtb_segmented(boxes, pad=10):
             box_line.append(box)
         else:
             box_line = sorted(box_line, key=lambda box: box[xmin_index])
-            box_line = box_utils.batch_box_xyminmax_to_coordinates(box_line)
+            box_line = box_ops.batch_box_xyminmax_to_coordinates(box_line)
             boxes_line.append(box_line)
 
             box_line = []  # reset box line

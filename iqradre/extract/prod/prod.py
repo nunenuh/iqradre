@@ -53,8 +53,6 @@ class Extractor(object):
         if self.weight != None:
             self.load_state_dict(weight)
             
-    
-        
         
     def load_state_dict(self, state_dict_path):
         state_dict = torch.load(state_dict_path)
@@ -87,15 +85,16 @@ class Extractor(object):
     def predict(self, objects):
         data_dict = utils.annoset_transform(objects, self.tokenizer, max_seq_length=512)
         inputs_data = utils.annoset_inputs(data_dict, device=self.device)
+#         print(inputs_data)
 
         outputs = self.model(**inputs_data)
 
         label_preds = utils.normalized_prediction(outputs, self.tokenizer)
         data_dict['labels'] = label_preds[0]
-        data = utils.clean_prediction_data(data_dict, self.tokenizer)
-        data = utils.rebuild_prediction_data(data)
+        data_clean = utils.clean_prediction_data(data_dict, self.tokenizer)
+        data = utils.rebuild_prediction_data(data_clean)
         
-        return data
+        return data, data_clean
 
 
 
