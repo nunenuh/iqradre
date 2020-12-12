@@ -7,7 +7,7 @@ from shapely.geometry import Polygon
 def box_coordinate_to_xyminmax(box, to_int=False):
     tl, tr, br, bl = box
     x_idx, y_idx = 0, 1
-    xmin, xmax, ymin, ymax,  = tl[x_idx], br[x_idx], tl[y_idx], bl[y_idx]
+    xmin, xmax, ymin, ymax,  = tl[x_idx], br[x_idx], tl[y_idx], br[y_idx]
     if to_int:
         xmin, ymin, xmax, ymax = int(xmin), int(ymin), int(xmax), int(ymax)
     return xmin, ymin, xmax, ymax

@@ -168,7 +168,7 @@ def clean_prediction_data(data_dict, tokenizer):
     return data
 
 def sort_multidim(data):
-    sorter = lambda x: (x[2][1], x[1])
+    sorter = lambda x: (x[2][0], x[1])
     # x[2][1] sort by y position
     # x[1] sort by BILOU
     
@@ -203,6 +203,13 @@ def rebuild_prediction_data(data):
         if not labels=="O":
             bil, val = labels.split("-")
             val_type, val_label = val.split("_")
+            if val_type=="FLD":
+                word = dfg.iloc[idx]['words']
+                if word =="PROVINSI" or word == "KOTA" or word =="KABUPATEN":
+                    key = label_cfg.label_to_name[val_label]
+                    base_data[key].append((word, bil, bbox))
+                
+                
             if val_type=="VAL":
                 word = dfg.iloc[idx]['words']
                 key = label_cfg.label_to_name[val_label]
