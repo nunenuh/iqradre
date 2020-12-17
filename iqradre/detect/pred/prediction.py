@@ -46,11 +46,17 @@ class BoxesPredictor:
 
         return score_text, score_link
 
-    def predict_word_boxes(self, image_path, text_threshold=0.7, link_threshold=0.3, low_text=0.3, poly=False,
-                           mag_ratio=1):
-        image = PF.load_image(image_path)
-        tensor, target_ratio, size_heatmap, img_resized = PF.load_image_tensor(image_path, mag_ratio=mag_ratio)
-        ratio_h = ratio_w = 1 / target_ratio
+    def predict_word_boxes(self, image, text_threshold=0.7, link_threshold=0.3, low_text=0.3, poly=False, mag_ratio=1):
+        if type(image) == str:
+            image = PF.load_image(image)
+            tensor, target_ratio, size_heatmap, img_resized = PF.image_to_tensor(image, mag_ratio=mag_ratio)
+            ratio_h = ratio_w = 1 / target_ratio
+        elif type(image) == np.ndarray:
+#             image = PF.load_image(image)
+            tensor, target_ratio, size_heatmap, img_resized = PF.image_to_tensor(image, mag_ratio=mag_ratio)
+            ratio_h = ratio_w = 1 / target_ratio
+        else:
+            raise Exception(f'image must be string of path to file or numpy ndarray type, other type are not supported')
 
         score_text, score_link = self.predict(tensor)
 

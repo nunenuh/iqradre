@@ -54,6 +54,15 @@ def load_image_tensor(path, dsize=1280, mag_ratio=1.5, device='cpu'):
     return img_device, target_ratio, size_heatmap, img_resized
 
 
+def image_to_tensor(img, dsize=1280, mag_ratio=1.5, device='cpu'):
+    img_resized, target_ratio, size_heatmap = resize_aspect_ratio(img, square_size=dsize, mag_ratio=mag_ratio)
+    img_tensor = F.to_tensor(img_resized)
+    img_normalized = normalize_variances(img_tensor)
+    img_norm_dim = normalize_dim(img_normalized)
+    img_device = img_norm_dim.to(device)
+    return img_device, target_ratio, size_heatmap, img_resized
+
+
 def minmax_scale(npar: np.ndarray) -> np.ndarray:
     return (npar - npar.min()) / (npar.max() - npar.min())
 

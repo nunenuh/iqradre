@@ -1,8 +1,13 @@
+
+import re
+
 import torch
+import numpy as np
 import pandas as pd
 from ..trainer import metrics
 from ..config import label as label_cfg
 from ..config import token as token_cfg
+
 
 
 def annoset_inputs(data_dict, device):
@@ -167,12 +172,47 @@ def clean_prediction_data(data_dict, tokenizer):
             
     return data
 
-def sort_multidim(data):
-    sorter = lambda x: (x[2][0], x[1])
-    # x[2][1] sort by y position
+def sort_multidim(data, ygap=28):
     # x[1] sort by BILOU
+    sorter = lambda x: (x[1])
+    data = sorted(data, key=sorter)
+#     print(data)
     
-    return sorted(data, key=sorter)
+    # x[2][1] sort by x position
+    sorter = lambda x: (x[2][1])
+    data = sorted(data, key=sorter)
+    
+    bx = np.array([val[2] for idx, val in enumerate(data)])
+    if len(bx)>0:
+        order, sub_order = [], []
+        for idx, val in enumerate(data):
+            if idx == 0: sub_order.append(val)
+            if idx > 0:
+                box_prev, box_now = data[idx-1][2], data[idx][2]
+                box_ygap = box_now[1] - box_prev[1]
+                if box_ygap<ygap:
+                    sub_order.append(val)
+                else:
+                    order.append(sub_order)
+                    sub_order = []
+                    sub_order.append(val)
+                    
+                    
+            if idx == len(data)-1:
+                if len(sub_order)==0:
+                    sub_order.append(val)
+                order.append(sub_order)
+                
+        reorder = []
+        for dt in order:          
+            dt = sorted(dt, key=lambda x: x[2][0])
+            reorder+=dt
+            
+        data = reorder
+        
+    
+    return data
+
 
 
 def word_taken(data):
@@ -205,8 +245,9 @@ def rebuild_prediction_data(data):
             val_type, val_label = val.split("_")
             if val_type=="FLD":
                 word = dfg.iloc[idx]['words']
-                if word =="PROVINSI" or word == "KOTA" or word =="KABUPATEN":
+                if "PROVINSI" in word or "KOTA" in word or "KABUPATEN" in word:
                     key = label_cfg.label_to_name[val_label]
+                    word = re.sub('[^A-Za-z0-9]+', '', word)
                     base_data[key].append((word, bil, bbox))
                 
                 
@@ -217,6 +258,7 @@ def rebuild_prediction_data(data):
 
 
     for k,v in base_data.items():
+#         print(v)
         sorted_data = sort_multidim(v)
         base_data[k] = word_taken(sorted_data)
     
