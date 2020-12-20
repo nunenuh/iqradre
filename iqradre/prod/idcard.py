@@ -17,6 +17,9 @@ from iqradre.detect.ops import box_ops
 
 from deskew import determine_skew
 from skimage.transform import rotate
+import imutils
+
+
 
 class IDCardPredictor(object):
     def __init__(self, config, device='cpu'):
@@ -34,8 +37,8 @@ class IDCardPredictor(object):
         self.info_extractor = Extractor(tokenizer=self.tokenizer, weight=self.config['extractor'], device=self.device)
         print(f'INFO: All model has been loaded!')
         
-    def predict(self, impath):
-        rot_img, angle = self._auto_deskew(impath)
+    def predict(self, impath, resize=True):
+        rot_img, angle = self._auto_deskew(impath, resize=resize)
         boxes_result = self._detect_boxes(rot_img)
         polys, boxes, images_patch, img, score_text, score_link, ret_score_text = boxes_result
         boxes_list = box_ops.batch_box_coordinate_to_xyminmax(boxes, to_int=True).tolist() 
@@ -67,7 +70,7 @@ class IDCardPredictor(object):
         polys, boxes, images_patch, img, score_text, score_link, ret_score_text = result
         return result
         
-    def _auto_deskew(self, impath):
+    def _auto_deskew(self, impath, resize=False):
         result = self._detect_boxes(impath)
         polys, boxes, images_patch, img, score_text, score_link, ret_score_text = result
         
@@ -75,6 +78,14 @@ class IDCardPredictor(object):
         rotated_img = rotate(img, angle, resize=True)
         
         rotated_img = (rotated_img * 255).astype(np.uint8)
+        
+        if resize:
+            shape = rotated_img.shape[:2]
+            max_index = shape.index(max(shape))
+            if max_index == 1:
+                rotated_img = imutils.resize(rotated_img, width=1000)
+            else:
+                rotated_img = imutils.resize(rotated_img, height=1000)
         
         return rotated_img, angle
         
