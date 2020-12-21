@@ -11,7 +11,7 @@ with open(path.join(here, 'requirements.txt'), encoding='utf-8') as f:
 
 setup(
     name='iqradre',
-    version='0.0.2',
+    version='0.0.4',
     description='',
     long_description=long_description,
     long_description_content_type='text/markdown',
@@ -40,9 +40,9 @@ setup(
     #
     #   py_modules=["my_module"],
     #
-    packages=find_packages(exclude=['contrib', 'docs', 'tests']),  # Required
+    packages=['iqradre'],  # Required
 
-    python_requires='>=3.6, <=3.6',
+    python_requires='>=3.6.8, <=3.7',
     install_requires=requirement_packages,
 
     extras_require={  # Optional
