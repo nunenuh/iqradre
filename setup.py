@@ -5,6 +5,10 @@ here = path.abspath(path.dirname(__file__))
 with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
+with open(path.join(here, 'requirements.txt'), encoding='utf-8') as f:
+    requirement_packages = f.read().split("\n")
+
+
 setup(
     name='iqradre',
     version='0.0.2',
@@ -23,7 +27,6 @@ setup(
         'Intended Audience :: Developers',
         'Topic :: Software Development',
         'License :: OSI Approved :: MIT License',
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
     ],
     keywords='pytorch deep learning machine learning',  # Optional
@@ -40,7 +43,7 @@ setup(
     packages=find_packages(exclude=['contrib', 'docs', 'tests']),  # Required
 
     python_requires='>=3.6, <=3.6',
-    install_requires=['torch', 'torchvision', 'torchtext', 'spacy', 'dataclasses'],
+    install_requires=requirement_packages,
 
     extras_require={  # Optional
         'dev': ['check-manifest'],
