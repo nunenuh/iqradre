@@ -40,7 +40,7 @@ setup(
     #
     #   py_modules=["my_module"],
     #
-    packages=['iqradre'],  # Required
+    packages=find_packages(),  # Required
 
     python_requires='>=3.6',
     install_requires=requirement_packages,

@@ -49,7 +49,7 @@ pandocfilters==1.4.3
 parso==0.7.1
 pexpect==4.8.0
 pickleshare==0.7.5
-Pillow==8.0.1
+Pillow==7.1.2
 prometheus-client==0.9.0
 prompt-toolkit==3.0.8
 ptyprocess==0.6.0
@@ -68,16 +68,15 @@ scikit-image==0.17.2
 scikit-learn==0.23.2
 scipy==1.5.4
 Send2Trash==1.5.0
-seqeval==1.2.2
+seqeval==0.0.12
 Shapely==1.7.1
 six==1.15.0
-terminado==0.9.1
 testpath==0.4.4
 threadpoolctl==2.1.0
 tifffile==2020.9.3
 tokenizers==0.9.4
 torch==1.7.1
-torchvision==0.8.2
+torchvision
 tornado==6.1
 tqdm==4.54.1
 traitlets==4.3.3
@@ -87,3 +86,4 @@ urllib3==1.26.2
 wcwidth==0.2.5
 webencodings==0.5.1
 zipp==3.4.0
+
