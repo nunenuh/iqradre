@@ -65,6 +65,8 @@ class IDCardPredictor(object):
             'prediction': data,
             'dataframe':dframe,
             'image': img,
+            'segment_image': segment_img,
+            'rotated_image': rot_img,
             'images_patch': images_patch,
             'boxes': boxes_list,
             'texts': text_list,
@@ -75,7 +77,12 @@ class IDCardPredictor(object):
         
     def _segment_predictor(self, impath):
         if self.config.get('segmentor', False):
-            image,mask,combined = self.segmentor.predict(impath)
+            image, mask, combined = self.segmentor.predict_canvas(impath, mask_color="#000000")
+            
+            import matplotlib.pyplot as plt
+            plt.imshow(combined)
+            print(combined.size)
+            
             combined = combined.convert("RGB")
             result = np.array(combined).astype(np.uint8)
             return result

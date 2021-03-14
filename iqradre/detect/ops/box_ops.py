@@ -69,6 +69,10 @@ def box_pad(box, factor=0.1, to_int=True):
     xmin, ymin, xmax, ymax = box
     w, h = xmax - xmin, ymax - ymin
     wf, hf = w * factor, h * factor
+    if w>h: 
+        wf = wf / 4
+    else:
+        hf = hf / 4
     xmin, ymin, xmax, ymax = xmin - wf, ymin - hf, xmax + wf, ymax + hf
     box_out = [xmin, ymin, xmax, ymax]
     if to_int:

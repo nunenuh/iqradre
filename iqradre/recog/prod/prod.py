@@ -59,7 +59,7 @@ class TextPredictor(object):
             VT.Grayscale(),
             NT.ResizeRatioWithRightPad(size=self.img_size),
             VT.ToTensor(),
-            VT.Normalize(mean=(0.5), std=(0.5))
+            VT.Normalize(mean=(0.5, ), std=(0.5, ))
         ])
         
         out = []
