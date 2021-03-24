@@ -79,10 +79,22 @@ def to_xyminmax_box(box: np.ndarray):
     ymin, ymax = np.min(box[:, 0]), np.max(box[:, 0])
     return xmin, ymin, xmax, ymax
 
-def to_xyminmax(box: np.ndarray):
+def to_xyminmax(box: np.ndarray, to_int: bool = False):
     xmin, xmax = np.min(box[:, 1]), np.max(box[:, 1])
     ymin, ymax = np.min(box[:, 0]), np.max(box[:, 0])
+    if to_int:
+        xmin, ymin, xmax, ymax = int(xmin), int(ymin), int(xmax), int(ymax)
     return xmin, ymin, xmax, ymax
+
+def to_xyminmax_batch(boxes: np.ndarray, to_int: bool = False):
+    xyminmax_boxes = []
+    for box in boxes:
+        res = to_xyminmax(box, to_int=to_int)
+        res = np.array(res).astype(np.float32)
+        xyminmax_boxes.append(res)
+
+    xyminmax_boxes = np.array(xyminmax_boxes).astype(np.float32)
+    return xyminmax_boxes
 
 def to_xywh(box):
     xmin, ymin, xmax, ymax = to_xyminmax(box)

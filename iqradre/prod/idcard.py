@@ -4,7 +4,7 @@ import numpy as np
 
 from iqradre.detect.pred import BoxesPredictor
 
-from iqradre.recog.prod import TextPredictor
+from iqradre.recog.prod import TextPredictor, TesseractPredictor
 from iqradre.recog.prod import utils as text_utils
 
 import transformers
@@ -14,8 +14,9 @@ from iqradre.extract.prod.prod import Extractor
 
 
 import matplotlib.pyplot as plt
-from iqradre.detect.ops import boxes as boxes_ops
-from iqradre.detect.ops import box_ops
+# from iqradre.detect.ops import boxes as boxes_ops
+# from iqradre.detect.ops import box_ops
+from iqradre.extract.ops import boxes_ops
 
 from iqradre.segment.prod import SegmentationPredictor
 
@@ -26,9 +27,10 @@ import imutils
 
 
 class IDCardPredictor(object):
-    def __init__(self, config, device='cpu'):
+    def __init__(self, config, device='cpu', use_tesseract=False):
         self.config = config
         self.device = device
+        self.use_tesseract = use_tesseract
         
         self._init_model()
     
@@ -38,18 +40,52 @@ class IDCardPredictor(object):
         if self.config.get('segmentor', False):
             self.segmentor = SegmentationPredictor(weight_path=self.config['segmentor'], device=self.device)
         self.boxes_detector = BoxesPredictor(weight_path=self.config['detector'], device=self.device)
-        self.text_recognitor = TextPredictor(weight_path=self.config['recognitor'], device=self.device)
+        
+        if self.use_tesseract:
+            self.text_recognitor = TesseractPredictor()
+        else:
+            self.text_recognitor = TextPredictor(weight_path=self.config['recognitor'], device=self.device)
         
         self.tokenizer = BertTokenizer.from_pretrained(self.config["tokenizer"])
         self.info_extractor = Extractor(tokenizer=self.tokenizer, weight=self.config['extractor'], device=self.device)
         print(f'INFO: All model has been loaded!')
         
-    def predict(self, impath, resize=True):
+    def _clean_boxes_result(self, boxes_result, min_size_percent=2):
+        polys, boxes, images_patch, img, score_text, score_link, ret_score_text = boxes_result
+        
+        #find max
+        sizes = [im.shape[1] for im in images_patch]
+        max_index, max_value = max(enumerate(sizes), key=lambda x: x[1])
+
+        #create percent by max size
+        percent_size = [int(size/max_value * 100) for size in sizes]
+
+        #exclude with minimum_size
+        remove_indices = [i for i, psize in enumerate(percent_size) if psize<=min_size_percent]
+        # images_patch = np.delete(images_patch, remove_indices).tolist()
+        new_boxes = []
+        new_images_patch = []
+        for i in range(len(images_patch)):
+            if not i in remove_indices:
+                new_boxes.append(boxes[i])
+                new_images_patch.append(images_patch[i])
+        new_boxes = np.array(new_boxes)
+        boxes_result = polys, new_boxes, new_images_patch, img, score_text, score_link, ret_score_text
+        
+        return boxes_result
+    
+    
+    def predict(self, impath, resize=True, text_threshold=0.7, link_threshold=0.3, low_text=0.5, min_size_percent=5):
         segment_img = self._segment_predictor(impath)
         rot_img, angle = self._auto_deskew(segment_img, resize=resize)
-        boxes_result = self._detect_boxes(rot_img)
+        boxes_result = self._detect_boxes(rot_img, 
+                                          text_threshold=text_threshold,
+                                          link_threshold=link_threshold,
+                                          low_text=low_text)
+        boxes_result = self._clean_boxes_result(boxes_result, min_size_percent=min_size_percent)
         polys, boxes, images_patch, img, score_text, score_link, ret_score_text = boxes_result
-        boxes_list = box_ops.batch_box_coordinate_to_xyminmax(boxes, to_int=True).tolist() 
+        
+        boxes_list = boxes_ops.to_xyminmax_batch(boxes, to_int=True).tolist() 
         
         text_list =  self.text_recognitor.predict(images_patch)
         
@@ -89,8 +125,11 @@ class IDCardPredictor(object):
         else:
             return impath
         
-    def _detect_boxes(self, impath):
-        result = self.boxes_detector.predict_word_boxes(impath, text_threshold=0.3, low_text=0.2)
+    def _detect_boxes(self, impath, text_threshold=0.7, link_threshold=0.3, low_text=0.5, min_size_percent=5):
+        result = self.boxes_detector.predict_word_boxes(impath, 
+                                                        text_threshold=text_threshold, 
+                                                        link_threshold=link_threshold, 
+                                                        low_text=low_text)
         polys, boxes, images_patch, img, score_text, score_link, ret_score_text = result
         return result
         

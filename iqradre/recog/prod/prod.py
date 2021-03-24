@@ -6,6 +6,11 @@ from iqradre.recog import transforms as NT
 from iqradre.recog.models import crnn_v1
 from torch.utils.data import Dataset, ConcatDataset, Subset, DataLoader
 
+from PIL import Image
+import numpy as np
+import pytesseract
+from typing import *
+
 
 
 class TextPredictor(object):
@@ -68,5 +73,38 @@ class TextPredictor(object):
             out.append(timg)
             
         return DataLoader(out, batch_size=len(out))
+    
+class TesseractPredictor(object):
+    def __init__(self, lang='eng', use_custom_config=True, oem=1, psm=7):
+        self.lang = lang
+        self.oem = oem
+        self.psm = psm
+        self.use_custom_config = use_custom_config
+        self.init_config()
+        
+    def init_config(self):
+        self.config = f'--oem {self.oem} --psm {self.psm}'
+        
+    
+    def _recognize(self, image: np.ndarray):
+        if self.use_custom_config:
+            return pytesseract.image_to_string(image, lang=self.lang, config=self.config)
+        else:
+            return pytesseract.image_to_string(image, lang=self.lang)
+
+    def _predict(self, images):
+        outputs = []
+        for image in images:
+            text = self._recognize(image)
+            outputs.append(text)
+            
+        return outputs
+        
+    def predict(self, images: List[np.ndarray])->List[str]:
+        return self._predict(images)
+        
+        
+        
+        
     
         

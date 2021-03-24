@@ -55,7 +55,7 @@ class Extractor(object):
             
         
     def load_state_dict(self, state_dict_path):
-        state_dict = torch.load(state_dict_path)
+        state_dict = torch.load(state_dict_path, map_location=torch.device(self.device))
         self.model.load_state_dict(state_dict)
     
     def _load_tokenizer(self):
