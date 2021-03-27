@@ -1,3 +1,4 @@
+from numpy.lib.arraypad import pad
 import pandas as pd
 import numpy as np
 
@@ -23,6 +24,7 @@ from iqradre.segment.prod import SegmentationPredictor
 from deskew import determine_skew
 from skimage.transform import rotate
 import imutils
+from . import utils
 
 
 
@@ -74,11 +76,17 @@ class IDCardPredictor(object):
         
         return boxes_result
     
+    def _resize_normalize(self, image:np.ndarray, dsize=(750, 1000), pad_color=0):
+        return utils.resize_pad(image, size=dsize, pad_color=pad_color)
     
-    def predict(self, impath, resize=True, text_threshold=0.7, link_threshold=0.3, low_text=0.5, min_size_percent=5):
+    
+    def predict(self, impath, resize=True, dsize=(1500,2000),
+                text_threshold=0.7, link_threshold=0.3, low_text=0.5, 
+                min_size_percent=5,):
         segment_img = self._segment_predictor(impath)
         rot_img, angle = self._auto_deskew(segment_img, resize=resize)
-        boxes_result = self._detect_boxes(rot_img, 
+        normalized_img = self._resize_normalize(rot_img, dsize=dsize)
+        boxes_result = self._detect_boxes(normalized_img, 
                                           text_threshold=text_threshold,
                                           link_threshold=link_threshold,
                                           low_text=low_text)
