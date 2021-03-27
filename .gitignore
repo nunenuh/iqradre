@@ -140,3 +140,4 @@ dmypy.json
 # ignore some data
 weights/
 checkpoints/
+logs/
