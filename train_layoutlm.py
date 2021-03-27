@@ -124,10 +124,10 @@ def train(dataset_path,
     trainer.fit(task, train_loader, valid_loader)
 
     #prepare to save result
-    tacc, tloss = task._results['trn_acc'], task._results['trn_loss']
+    print(task._results.keys())
     vacc , vloss = task._results['val_acc'], task._results['val_loss']
     dirname = Path(dataset_path).name
-    filename = f'layoutlm_v2_ktp_{dirname}_tacc{tacc:.4}_tloss{tloss:.4}_vacc{vacc:.4}_vloss{vloss:.4}_cli.pth'
+    filename = f'layoutlm_v2_ktp_{dirname}_vacc{vacc:.4}_vloss{vloss:.4}_cli.pth'
     saved_filename = str(Path(weight_path).joinpath(filename))
     
     logging.info(f"Prepare to save training results to path {saved_filename}")
