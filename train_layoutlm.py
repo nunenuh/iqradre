@@ -32,12 +32,15 @@ def train(dataset_path,
           state_dict_path=None,
           weight_path = 'weights/extract/',
           
+          
           max_epoch=5,
           lr=0.001, 
           valcheck_interval=2000,
           num_gpus=1, log_freq=100,
-          checkpoint_path = "checkpoints/v2/",
+          resume_checkpoint_path = None,
+          checkpoint_saved_path = "checkpoints/v2/",
           logs_path = "logs/v2/",
+          prefix_name = 'layoutlm-v2',
           manual_seed=1261):
 
     logging.basicConfig(level=logging.INFO)
@@ -99,12 +102,12 @@ def train(dataset_path,
 
     # DEFAULTS used by the Trainer
     checkpoint_callback = pl.callbacks.ModelCheckpoint(
-        filepath=checkpoint_path,
+        filepath=checkpoint_saved_path,
         save_top_k=1,
         verbose=True,
         monitor='val_loss',
         mode='min',
-        prefix='layoutlm-v2'
+        prefix=prefix_name
     )
 
     tb_logger = pl_loggers.TensorBoardLogger(logs_path)
@@ -120,8 +123,11 @@ def train(dataset_path,
         benchmark=True,
         logger=tb_logger, 
         checkpoint_callback=checkpoint_callback, 
+        resume_from_checkpoint=resume_checkpoint_path,
     )
     trainer.fit(task, train_loader, valid_loader)
+    metrics = trainer.test()
+    print(metrics)
 
     #prepare to save result
     print(task._results.keys())
