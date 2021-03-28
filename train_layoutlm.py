@@ -112,7 +112,7 @@ def train(dataset_path,
 
     tb_logger = pl_loggers.TensorBoardLogger(logs_path)
     pl.trainer.seed_everything(manual_seed)
-    
+
     trainer = pl.Trainer(
         weights_summary="top",
         max_epochs=max_epoch,
@@ -126,8 +126,8 @@ def train(dataset_path,
         resume_from_checkpoint=resume_checkpoint_path,
     )
     trainer.fit(task, train_loader, valid_loader)
-    metrics = trainer.test(task, valid_loader)
-    print('Metircs', metrics)
+    # metrics = trainer.test(task, valid_loader)
+    print('Metircs', trainer.logged_metrics)
 
     #prepare to save result
     # print(task._results.keys())
