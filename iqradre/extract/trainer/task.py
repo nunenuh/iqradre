@@ -81,6 +81,15 @@ class TaskLayoutLM(pl.LightningModule):
         self.log('val_precision', metrics['precision'], prog_bar=True, logger=True)
         self.log('val_recall', metrics['recall'], prog_bar=True, logger=True)
         return loss
+    
+    def test_step(self, batch, batch_idx):
+        loss, logits, metrics = self.shared_step(batch, batch_idx)
+        self.log('test_loss', loss, prog_bar=True, logger=True)
+        self.log('test_acc', metrics['accuracy'], prog_bar=True, logger=True)
+        self.log('test_f1', metrics['f1'], prog_bar=True, logger=True)
+        self.log('test_precision', metrics['precision'], prog_bar=True, logger=True)
+        self.log('test_recall', metrics['recall'], prog_bar=True, logger=True)
+        return loss
         
     def configure_optimizers(self):
         no_decay = ["bias", "LayerNorm.weight"]
