@@ -79,10 +79,11 @@ class Extractor(object):
                  config=self.config,
         )
         self.model.resize_token_embeddings(len(self.tokenizer))
-        self.model.to(self.device)
+        self.model = self.model.to(self.device)
         
     
     def predict(self, objects):
+        self.model.eval()
         data_dict = utils.annoset_transform(objects, self.tokenizer, max_seq_length=512)
         inputs_data = utils.annoset_inputs(data_dict, device=self.device)
 #         print(inputs_data)

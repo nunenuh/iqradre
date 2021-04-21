@@ -54,14 +54,21 @@ class UNetDecoder(nn.Module):
 
 
 class UNet(nn.Module):
-    def __init__(self, in_chan, n_classes, start_feat=64):
+    def __init__(self, in_chan, n_classes, start_feat=64, device="cpu"):
         super(UNet, self).__init__()
+        self.device = device
         self.encoder_in_chan = in_chan
         self.decoder_in_chan = start_feat * 16
         self.start_feat = start_feat
 
         self.encoder = UNetEncoder(in_chan=self.encoder_in_chan, start_feat=start_feat)
         self.decoder = UNetDecoder(in_chan=self.decoder_in_chan, n_classes=n_classes)
+        
+        self._init_device()
+        
+    def _init_device(self):
+        self.encoder = self.encoder.to(self.device)
+        self.decoder = self.decoder.to(self.device)
 
     def forward(self, x):
         dc4, dc3, dc2, dc1, inc = self.encoder(x)

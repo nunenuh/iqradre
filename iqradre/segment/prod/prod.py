@@ -28,9 +28,10 @@ class SegmentationPredictor(object):
     def _load_state_dict(self, state_dict_path):
         state_dict = torch.load(state_dict_path)
         self.model.load_state_dict(state_dict)
+        self.model = self.model.to(self.device)
         
     def _load_model(self):
-        self.model = UNet(in_chan=1, n_classes=1, start_feat=32)
+        self.model = UNet(in_chan=1, n_classes=1, start_feat=32, device=self.device)
     
     def _clean_output(self, output): 
         output = output.squeeze()    
@@ -56,6 +57,7 @@ class SegmentationPredictor(object):
         return canvas, croped_area
         
     def predict(self, image, mask_color="#ffffff"):
+        self.model.eval()
         if type(image) == str:
             im_path = pathlib.Path(image)
             image = PIL.Image.open(str(im_path))
@@ -80,6 +82,8 @@ class SegmentationPredictor(object):
     
     
     def predict_canvas(self, image, mask_color="#ffffff"):
+        self.model.eval()
+        
         if type(image) == str:
             im_path = pathlib.Path(image)
             image = PIL.Image.open(str(im_path))
@@ -87,11 +91,13 @@ class SegmentationPredictor(object):
         w, h = image.size
         image_tmft = utils.valid_tmft(image)
         image_tmft = image_tmft.unsqueeze(dim=0)
+        if self.device!="cpu":
+            image_tmft = image_tmft.to(self.device)
         with torch.no_grad():
             output = self.model(image_tmft)
             output = torch.sigmoid(output)
         
-#         output = self._clean_output(output)
+        output = self._clean_output(output)
 #         print(output.shape)
         output = output.squeeze()
         output = VF.to_pil_image(output)

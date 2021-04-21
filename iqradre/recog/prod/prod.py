@@ -30,14 +30,19 @@ class TextPredictor(object):
         
     def _load_model(self):
         state_dict = torch.load(self.weight_path, map_location=torch.device(self.device))
-        self.model = crnn_v1.OCRNet(num_class=self.num_class, im_size=self.img_size, hidden_size=256)
+        self.model = crnn_v1.OCRNet(num_class=self.num_class, im_size=self.img_size, hidden_size=256, device=self.device)
         self.model.load_state_dict(state_dict)
+        self.model = self.model.to(self.device)
+
         
     def _predict(self, images:list):
+        self.model.eval()
+        
         dloader = self._transform_loader(images)
         images = next(iter(dloader))
+        if self.device!="cpu":
+            images = images.to(self.device)
         batch_size = images.shape[0]
-        
         
         length = torch.IntTensor([self.batch_max_length] * batch_size)
         preds = self.model(images)

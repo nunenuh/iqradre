@@ -49,7 +49,7 @@ class IDCardPredictor(object):
             self.text_recognitor = TextPredictor(weight_path=self.config['recognitor'], device=self.device)
         
         self.tokenizer = BertTokenizer.from_pretrained(self.config["tokenizer"])
-        self.info_extractor = Extractor(tokenizer=self.tokenizer, weight=self.config['extractor'], device=self.device)
+        self.info_extractor = Extractor(tokenizer=self.tokenizer, weight=self.config['extractor'], device='cpu')
         print(f'INFO: All model has been loaded!')
         
     def _clean_boxes_result(self, boxes_result, min_size_percent=2):

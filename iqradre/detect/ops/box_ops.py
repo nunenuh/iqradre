@@ -4,10 +4,17 @@ import numpy as np
 from shapely.geometry import Polygon
 
 
-def box_coordinate_to_xyminmax(box, to_int=False):
-    tl, tr, br, bl = box
-    x_idx, y_idx = 0, 1
-    xmin, xmax, ymin, ymax,  = tl[x_idx], br[x_idx], tl[y_idx], br[y_idx]
+# def box_coordinate_to_xyminmax(box, to_int=False):
+#     tl, tr, br, bl = box
+#     x_idx, y_idx = 0, 1
+#     xmin, xmax, ymin, ymax,  = tl[x_idx], br[x_idx], tl[y_idx], br[y_idx]
+#     if to_int:
+#         xmin, ymin, xmax, ymax = int(xmin), int(ymin), int(xmax), int(ymax)
+#     return xmin, ymin, xmax, ymax
+
+def box_coordinate_to_xyminmax(box: np.ndarray, to_int: bool = False):
+    xmin, xmax = np.min(box[:, 1]), np.max(box[:, 1])
+    ymin, ymax = np.min(box[:, 0]), np.max(box[:, 0])
     if to_int:
         xmin, ymin, xmax, ymax = int(xmin), int(ymin), int(xmax), int(ymax)
     return xmin, ymin, xmax, ymax
