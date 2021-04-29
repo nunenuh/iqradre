@@ -24,6 +24,7 @@ from iqradre.segment.prod import SegmentationPredictor
 from deskew import determine_skew
 from skimage.transform import rotate
 import imutils
+import cv2 as cv
 from . import utils
 
 
@@ -77,8 +78,20 @@ class IDCardPredictor(object):
         return boxes_result
     
     def _resize_normalize(self, image:np.ndarray, dsize=(750, 1000), pad_color=0):
-        return utils.resize_pad(image, size=dsize, pad_color=pad_color)
-    
+        try:
+            outimg = utils.resize_pad(image, size=dsize, pad_color=pad_color)
+        except:
+            h,w = image.shape[:2]
+            print(f'resize exception ori size:({h},{w})')
+            ratio = h/w
+            if ratio<1.3:
+                nh = int(h * 1.3)
+                dim = (nh, w)
+                outimg = cv.resize(image, dim, interpolation=cv.INTER_LINEAR)
+                size = outimg.shape[:2]
+                print(f'resize Exception new size: {size}')
+        
+        return outimg
     
     def predict(self, impath, resize=True, dsize=(1500,2000),
                 text_threshold=0.7, link_threshold=0.3, low_text=0.5, 
@@ -125,7 +138,7 @@ class IDCardPredictor(object):
             
             import matplotlib.pyplot as plt
             plt.imshow(combined)
-            print(combined.size)
+            print('segment_predictor size ==>',combined.size)
             
             combined = combined.convert("RGB")
             result = np.array(combined).astype(np.uint8)
