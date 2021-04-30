@@ -45,7 +45,8 @@ class TextPredictor(object):
         batch_size = images.shape[0]
         
         length = torch.IntTensor([self.batch_max_length] * batch_size)
-        preds = self.model(images)
+        with torch.no_grad():
+            preds = self.model(images)
         preds = preds[:, :self.batch_max_length, :]
         _, preds_index = preds.max(2)
         preds_str = self.converter.decode(preds_index, length)

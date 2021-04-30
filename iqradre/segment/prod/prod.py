@@ -93,6 +93,7 @@ class SegmentationPredictor(object):
         image_tmft = image_tmft.unsqueeze(dim=0)
         if self.device!="cpu":
             image_tmft = image_tmft.to(self.device)
+            
         with torch.no_grad():
             output = self.model(image_tmft)
             output = torch.sigmoid(output)

@@ -26,8 +26,11 @@ from skimage.transform import rotate
 import imutils
 import cv2 as cv
 from . import utils
+import torch
 
 
+torch.cudnn.enabled = True
+torch.cudnn.benchmark = True
 
 class IDCardPredictor(object):
     def __init__(self, config, device='cpu', use_tesseract=False):

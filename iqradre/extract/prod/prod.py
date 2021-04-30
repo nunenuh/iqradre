@@ -87,8 +87,8 @@ class Extractor(object):
         data_dict = utils.annoset_transform(objects, self.tokenizer, max_seq_length=512)
         inputs_data = utils.annoset_inputs(data_dict, device=self.device)
 #         print(inputs_data)
-
-        outputs = self.model(**inputs_data)
+        with torch.no_grad():
+            outputs = self.model(**inputs_data)
 
         label_preds = utils.normalized_prediction(outputs, self.tokenizer)
         data_dict['labels'] = label_preds[0]
