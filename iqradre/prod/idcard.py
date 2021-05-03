@@ -28,9 +28,8 @@ import cv2 as cv
 from . import utils
 import torch
 
+import time
 
-torch.cudnn.enabled = True
-torch.cudnn.benchmark = True
 
 class IDCardPredictor(object):
     def __init__(self, config, device='cpu', use_tesseract=False):
@@ -99,7 +98,14 @@ class IDCardPredictor(object):
     def predict(self, impath, resize=True, dsize=(1500,2000),
                 text_threshold=0.7, link_threshold=0.3, low_text=0.5, 
                 min_size_percent=5,):
+        
+        # UNET Network
+        unet_stime = time.time()
         segment_img = self._segment_predictor(impath)
+        unet_etime = time.time()
+        
+        # CRAFT network
+        craft_stime = time.time()
         rot_img, angle = self._auto_deskew(segment_img, resize=resize)
         normalized_img = self._resize_normalize(rot_img, dsize=dsize)
         boxes_result = self._detect_boxes(normalized_img, 
@@ -108,16 +114,22 @@ class IDCardPredictor(object):
                                           low_text=low_text)
         boxes_result = self._clean_boxes_result(boxes_result, min_size_percent=min_size_percent)
         polys, boxes, images_patch, img, score_text, score_link, ret_score_text = boxes_result
-        
         boxes_list = boxes_ops.to_xyminmax_batch(boxes, to_int=True).tolist() 
+        craft_etime = time.time()
         
+        # CRNN Network
+        crnn_stime = time.time()
         text_list =  self.text_recognitor.predict(images_patch)
+        crnn_etime = time.time()
         
+        
+        # Layoutlm Network
+        layoutlm_stime = time.time()
         data_annoset = text_utils.build_annoset(text_list, boxes)
         data_annoset = sorted(data_annoset, key = lambda i: (i['bbox'][1], i['bbox'][0]))
-        
         data, clean = self.info_extractor.predict(data_annoset)  
         dframe = pd.DataFrame(clean)
+        layoutlm_etime = time.time()
         
 #         data, dframe, img, boxes_list, text_list, score_text, score_list
         
@@ -133,6 +145,12 @@ class IDCardPredictor(object):
             'score_text': score_text,
             'score_list': score_link,
             'score': score_text+score_link,
+            'times':{
+                'unet': unet_etime - unet_stime,
+                'craft': craft_etime - craft_stime,
+                'crnn': crnn_etime - crnn_stime,
+                'layoutlm': layoutlm_etime - layoutlm_stime,
+            }
         }
         
     def _segment_predictor(self, impath):
