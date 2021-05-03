@@ -146,10 +146,10 @@ class IDCardPredictor(object):
             'score_list': score_link,
             'score': score_text+score_link,
             'times':{
-                'unet': f'{(unet_etime - unet_stime):.4d} s',
-                'craft': f'{(craft_etime - craft_stime):.4d} s',
-                'crnn': f'{(crnn_etime - crnn_stime):.4d} s',
-                'layoutlm': f'{(layoutlm_etime - layoutlm_stime):.4d} s',
+                'unet': f'{(unet_etime - unet_stime):.4f} s',
+                'craft': f'{(craft_etime - craft_stime):.4f} s',
+                'crnn': f'{(crnn_etime - crnn_stime):.4f} s',
+                'layoutlm': f'{(layoutlm_etime - layoutlm_stime):.4f} s',
             }
         }
         
