@@ -27,8 +27,12 @@ import imutils
 import cv2 as cv
 from . import utils
 import torch
+import pathlib
+import PIL
 
 import time
+
+
 
 
 class IDCardPredictor(object):
@@ -95,9 +99,49 @@ class IDCardPredictor(object):
         
         return outimg
     
-    def predict(self, impath, resize=True, dsize=(1500,2000),
+    
+    def crop_from_scanner(self, image, g1=220, g2=50, pfac=0.1):
+        if type(image) == str:
+            im_path = pathlib.Path(image)
+            image = PIL.Image.open(str(im_path))
+            image = np.array(image)
+            
+        gray = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
+        blur = cv.GaussianBlur(gray, (1,1), 2000)
+        flag, thresh = cv.threshold(blur, g1, g2, cv.THRESH_BINARY_INV) 
+        # canny = cv.Canny(thresh, g1, g2)
+        
+        contours, hierarchy = cv.findContours(thresh, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+        contours = sorted(contours, key=cv.contourArea, reverse=True)[:10] 
+        
+        boxes = []
+        for card in contours:
+            peri = cv.arcLength(card, True)
+            box = cv.boundingRect(card)
+            boxes.append(box)
+            
+        box = boxes[0]
+        box = utils.xywh2xymm(box)
+        box = utils.pad(box, factor=pfac)
+        (xmin,ymin,xmax,ymax) = box
+        x,y,w,h = utils.xymm2xywh(box)
+        # box np.array(box)
+        # box = utils.box_coordinate_to_xyminmax(box)
+        # image = cv.rectangle(image, (x,y), (x+w,y+h), (0,255,0), 2)
+        crop = image[ymin:ymax, xmin:xmax]
+        crop = PIL.Image.fromarray(crop)
+        
+        return crop,  box
+
+        
+    
+    def predict(self, impath, mode='mobile', resize=True, dsize=(1500,2000),
                 text_threshold=0.7, link_threshold=0.3, low_text=0.5, 
                 min_size_percent=5,):
+        
+        
+        if mode!='mobile':
+            impath, box = self.crop_from_scanner(impath)
         
         # UNET Network
         unet_stime = time.time()

@@ -31,6 +31,16 @@ def coord2xywh(box):
     return xmin, ymin, xmax - xmin, ymax - ymin
 
 
+def xywh2xymm(box):
+    x,y,w,h = box
+    xmin, ymin, xmax, ymax = x, y, x+w, y+h
+    return xmin, ymin, xmax, ymax
+
+def xymm2xywh(box):
+    xmin, ymin, xmax, ymax = box
+    x,y,w,h = xmin, ymin, xmax-xmin, ymax-ymin
+    return x,y,w,h
+
 def batch_coord2xymm(boxes, to_int=False):
     xymm_boxes = []
     for box in boxes:

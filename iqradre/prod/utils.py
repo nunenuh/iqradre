@@ -43,3 +43,55 @@ def resize_pad(img, size, pad_color=0):
     scaled_img = cv.copyMakeBorder(scaled_img, pad_top, pad_bot, pad_left, pad_right, borderType=cv.BORDER_CONSTANT, value=pad_color)
 
     return scaled_img
+
+def coord2xyminmax(box: np.ndarray, to_int: bool = False):
+    xmin, xmax = np.min(box[:, 1]), np.max(box[:, 1])
+    ymin, ymax = np.min(box[:, 0]), np.max(box[:, 0])
+    if to_int:
+        xmin, ymin, xmax, ymax = int(xmin), int(ymin), int(xmax), int(ymax)
+    return xmin, ymin, xmax, ymax
+
+
+def xywh2xymm(box):
+    x,y,w,h = box
+    xmin, ymin, xmax, ymax = x, y, x+w, y+h
+    return xmin, ymin, xmax, ymax
+
+
+def xymm2xywh(box):
+    xmin, ymin, xmax, ymax = box
+    x,y,w,h = xmin, ymin, xmax-xmin, ymax-ymin
+    return x,y,w,h
+
+def pad(box, factor=0.1, to_int=True):
+    xmin, ymin, xmax, ymax = box
+    w, h = xmax - xmin, ymax - ymin
+    wf, hf = w * factor, h * factor
+    xmin, ymin, xmax, ymax = xmin - wf, ymin - hf, xmax + wf, ymax + hf
+    box_out = [xmin, ymin, xmax, ymax]
+    if to_int:
+        box_out = [int(xmin), int(ymin), int(xmax), int(ymax)]
+
+    # check if minus set to zero
+    for idx, val in enumerate(box_out):
+        if val < 0:
+            box_out[idx] = 0
+
+    return tuple(box_out)
+
+
+def rectify(h):
+  h = h.reshape((4,2))
+  hnew = np.zeros((4,2),dtype = np.float32)
+
+  add = h.sum(1)
+  hnew[0] = h[np.argmin(add)]
+  hnew[2] = h[np.argmax(add)]
+   
+  diff = np.diff(h,axis = 1)
+  hnew[1] = h[np.argmin(diff)]
+  hnew[3] = h[np.argmax(diff)]
+
+  return hnew
+
+
