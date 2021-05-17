@@ -164,12 +164,12 @@ def clean_prediction_data(data_dict, tokenizer):
                 w==tokenizer.sep_token or 
                 w==tokenizer.pad_token):
 
-            data_pred['words'].append(w)
-            data_pred['bboxes'].append(b)
-            data_pred['tokens'].append(t)
-            data_pred['labels'].append(l)
-            data_pred['gseq'].append(gq)
-            data_pred['wseq'].append(wq)
+            data['words'].append(w)
+            data['bboxes'].append(b)
+            data['tokens'].append(t)
+            data['labels'].append(l)
+            data['gseq'].append(gq)
+            data['wseq'].append(wq)
             
     return data
 
@@ -267,7 +267,7 @@ def rebuild_prediction_data(data):
 
 
 def tanggal_lahir_splitting(data):
-    ttl = data['prediction']['ttl']
+    ttl = data['ttl']
     tempat, tgl = '', ''
     if ',' in ttl:
         ttl_split = ttl.split(',')
@@ -279,7 +279,7 @@ def tanggal_lahir_splitting(data):
 
 
 def post_process(data):
-    data_pred = data['prediction']
+    data_pred = data
     tempat, tgl = tanggal_lahir_splitting(data)
     pred = OrderedDict()
     pred['provinsi'] = data_pred['provinsi']
@@ -303,6 +303,7 @@ def post_process(data):
     pred['sign_place'] = data_pred['sign_place']
     pred['sign_date'] = data_pred['sign_date']
     
-    data['prediction'] = pred
-    return data
+    
+    
+    return dict(pred)
     
