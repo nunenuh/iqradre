@@ -94,6 +94,7 @@ class Extractor(object):
         data_dict['labels'] = label_preds[0]
         data_clean = utils.clean_prediction_data(data_dict, self.tokenizer)
         data = utils.rebuild_prediction_data(data_clean)
+#         print(data)
         data = utils.post_process(data)
         
         return data, data_clean

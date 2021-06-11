@@ -81,14 +81,14 @@ class IDCardPredictor(object):
             outimg = utils.resize_pad(image, size=dsize, pad_color=pad_color)
         except:
             h,w = image.shape[:2]
-            print(f'resize exception ori size:({h},{w})')
+#             print(f'resize exception ori size:({h},{w})')
             ratio = h/w
             if ratio<1.3:
                 nh = int(h * 1.3)
                 dim = (nh, w)
                 outimg = cv.resize(image, dim, interpolation=cv.INTER_LINEAR)
                 size = outimg.shape[:2]
-                print(f'resize Exception new size: {size}')
+#                 print(f'resize Exception new size: {size}')
         
         return outimg
     
@@ -197,7 +197,7 @@ class IDCardPredictor(object):
             
             import matplotlib.pyplot as plt
             plt.imshow(combined)
-            print('segment_predictor size ==>',combined.size)
+#             print('segment_predictor size ==>',combined.size)
             
             combined = combined.convert("RGB")
             result = np.array(combined).astype(np.uint8)
