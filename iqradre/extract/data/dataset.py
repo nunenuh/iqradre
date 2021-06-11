@@ -156,7 +156,7 @@ class IDCardAnnoDataset(object):
             pts = obj['points']
             pts = np.array(pts).astype(np.int)
             pts = boxes_ops.order_points(np.array(pts).astype(np.int))
-            pts = list(boxes_ops.to_xyminmax(pts))
+            pts = list(boxes_ops.coord2xymm(pts))
             
             dct = {
                 'text': obj['text'],

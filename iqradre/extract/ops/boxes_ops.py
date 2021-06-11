@@ -47,41 +47,98 @@ def four_point_transform(image, pts):
     return warped
 
 
-def xywh_to_point(xywh, use_pad=False, pad_factor=0.01):
-    x, y, w, h = xywh
-    xmin, ymin, xmax, ymax = x, y, x + w, y + h
-    if use_pad:
-        xmin, ymin = xmin - (xmin * pad_factor), ymin - (ymin * pad_factor)
-        xmax, ymax = xmax + (xmax * pad_factor), ymax + (ymax * pad_factor)
-    points = np.array([(xmin, ymin), (xmax, ymin), (xmax, ymax), (xmin, ymax)])
-    return points
+# def xywh_to_point(xywh, use_pad=False, pad_factor=0.01):
+#     x, y, w, h = xywh
+#     xmin, ymin, xmax, ymax = x, y, x + w, y + h
+#     if use_pad:
+#         xmin, ymin = xmin - (xmin * pad_factor), ymin - (ymin * pad_factor)
+#         xmax, ymax = xmax + (xmax * pad_factor), ymax + (ymax * pad_factor)
+#     points = np.array([(xmin, ymin), (xmax, ymin), (xmax, ymax), (xmin, ymax)])
+#     return points
 
 
-def to_xyminmax_box(box: np.ndarray):
-    ymin, ymax = np.min(box[:, 1]), np.max(box[:, 1])
-    xmin, xmax = np.min(box[:, 0]), np.max(box[:, 0])
-    return xmin, ymin, xmax, ymax
+# def to_xyminmax_box(box: np.ndarray):
+#     ymin, ymax = np.min(box[:, 1]), np.max(box[:, 1])
+#     xmin, xmax = np.min(box[:, 0]), np.max(box[:, 0])
+#     return xmin, ymin, xmax, ymax
 
-def to_xyminmax(box: np.ndarray, to_int: bool = False):
+# def to_xyminmax(box: np.ndarray, to_int: bool = False):
+#     ymin, ymax = np.min(box[:, 1]), np.max(box[:, 1])
+#     xmin, xmax = np.min(box[:, 0]), np.max(box[:, 0])
+#     if to_int:
+#         xmin, ymin, xmax, ymax = int(xmin), int(ymin), int(xmax), int(ymax)
+#     return xmin, ymin, xmax, ymax
+
+# def to_xyminmax_batch(boxes: np.ndarray, to_int: bool = False):
+#     xyminmax_boxes = []
+#     for box in boxes:
+#         res = to_xyminmax(box, to_int=to_int)
+#         res = np.array(res).astype(np.float32)
+#         xyminmax_boxes.append(res)
+
+#     xyminmax_boxes = np.array(xyminmax_boxes).astype(np.float32)
+#     return xyminmax_boxes
+
+# def to_xywh(box):
+#     xmin, ymin, xmax, ymax = to_xyminmax(box)
+#     return xmin, ymin, xmax - xmin, ymax - ymin
+
+
+
+
+def coord2xymm(box, to_int=False):
     ymin, ymax = np.min(box[:, 1]), np.max(box[:, 1])
     xmin, xmax = np.min(box[:, 0]), np.max(box[:, 0])
     if to_int:
         xmin, ymin, xmax, ymax = int(xmin), int(ymin), int(xmax), int(ymax)
     return xmin, ymin, xmax, ymax
 
-def to_xyminmax_batch(boxes: np.ndarray, to_int: bool = False):
-    xyminmax_boxes = []
-    for box in boxes:
-        res = to_xyminmax(box, to_int=to_int)
-        res = np.array(res).astype(np.float32)
-        xyminmax_boxes.append(res)
 
-    xyminmax_boxes = np.array(xyminmax_boxes).astype(np.float32)
-    return xyminmax_boxes
+def xymm2coord(box, to_int=False):
+    xmin, ymin, xmax, ymax = box
+    if to_int:
+        xmin, ymin, xmax, ymax = int(xmin), int(ymin), int(xmax), int(ymax)
+    four_points = [
+        [xmin, ymin],  # top left
+        [xmax, ymin],  # top right
+        [xmax, ymax],  # bottom right
+        [xmin, ymax],  # bottom left
+    ]
+    return four_points
 
-def to_xywh(box):
-    xmin, ymin, xmax, ymax = to_xyminmax(box)
+
+def coord2xywh(box):
+    xmin, ymin, xmax, ymax = coord2xymm(box)
     return xmin, ymin, xmax - xmin, ymax - ymin
+
+
+def xywh2xymm(box):
+    x,y,w,h = box
+    xmin, ymin, xmax, ymax = x, y, x+w, y+h
+    return xmin, ymin, xmax, ymax
+
+def xymm2xywh(box):
+    xmin, ymin, xmax, ymax = box
+    x,y,w,h = xmin, ymin, xmax-xmin, ymax-ymin
+    return x,y,w,h
+
+def batch_coord2xymm(boxes, to_int=False):
+    xymm_boxes = []
+    for box in boxes:
+        res = coord2xymm(box, to_int=to_int)
+        res = np.array(res).astype(np.float32)
+        xymm_boxes.append(res)
+
+    return np.array(xymm_boxes).astype(np.float32)
+
+
+def batch_xymm2coord(boxes, to_int=False):
+    four_points = []
+    for box in boxes:
+        res = xymm2coord(box, to_int=to_int)
+        res = np.array(res).astype(np.float32)
+        four_points.append(res)
+    return four_points
 
 def corner_from_shape(image: np.ndarray):
     h, w = image.shape[:2]

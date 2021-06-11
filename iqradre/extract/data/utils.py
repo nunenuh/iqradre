@@ -102,7 +102,7 @@ def format_annotation_objects(anno, tokenizer, max_seq_length=512, rand_seq=Fals
         pts = obj['points']
         pts = np.array(pts)
         pts = boxes_ops.order_points(np.array(pts))
-        pts = list(boxes_ops.to_xyminmax(pts))
+        pts = list(boxes_ops.coord2xymm(pts))
         boxes.append(pts)
 
     tokens.append(token_cfg.sep_token)

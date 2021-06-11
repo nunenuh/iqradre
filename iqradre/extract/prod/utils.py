@@ -8,8 +8,12 @@ from ..trainer import metrics
 from ..config import label as label_cfg
 from ..config import token as token_cfg
 from collections import OrderedDict
+from ..ops import boxes_ops
 
-
+def build_annoset(text_list, boxes):
+    boxes_list = boxes_ops.batch_coord2xymm(boxes, to_int=True).tolist()    
+    annoset = [{'text':t, "bbox": b}  for t,b in zip(text_list, boxes_list)] 
+    return annoset
 
 def annoset_inputs(data_dict, device):
     input_ids = torch.tensor(data_dict['token_ids'], dtype=torch.long)
@@ -164,12 +168,12 @@ def clean_prediction_data(data_dict, tokenizer):
                 w==tokenizer.sep_token or 
                 w==tokenizer.pad_token):
 
-            data['words'].append(w)
-            data['bboxes'].append(b)
-            data['tokens'].append(t)
-            data['labels'].append(l)
-            data['gseq'].append(gq)
-            data['wseq'].append(wq)
+            data_pred['words'].append(w)
+            data_pred['bboxes'].append(b)
+            data_pred['tokens'].append(t)
+            data_pred['labels'].append(l)
+            data_pred['gseq'].append(gq)
+            data_pred['wseq'].append(wq)
             
     return data
 
@@ -267,7 +271,7 @@ def rebuild_prediction_data(data):
 
 
 def tanggal_lahir_splitting(data):
-    ttl = data['ttl']
+    ttl = data['prediction']['ttl']
     tempat, tgl = '', ''
     if ',' in ttl:
         ttl_split = ttl.split(',')
@@ -279,7 +283,7 @@ def tanggal_lahir_splitting(data):
 
 
 def post_process(data):
-    data_pred = data
+    data_pred = data['prediction']
     tempat, tgl = tanggal_lahir_splitting(data)
     pred = OrderedDict()
     pred['provinsi'] = data_pred['provinsi']
@@ -303,7 +307,6 @@ def post_process(data):
     pred['sign_place'] = data_pred['sign_place']
     pred['sign_date'] = data_pred['sign_date']
     
-    
-    
-    return dict(pred)
+    data['prediction'] = pred
+    return data
     

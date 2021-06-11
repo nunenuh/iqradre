@@ -45,8 +45,8 @@ def resize_pad(img, size, pad_color=0):
     return scaled_img
 
 def coord2xyminmax(box: np.ndarray, to_int: bool = False):
-    xmin, xmax = np.min(box[:, 1]), np.max(box[:, 1])
-    ymin, ymax = np.min(box[:, 0]), np.max(box[:, 0])
+    ymin, ymax = np.min(box[:, 1]), np.max(box[:, 1])
+    xmin, xmax = np.min(box[:, 0]), np.max(box[:, 0])
     if to_int:
         xmin, ymin, xmax, ymax = int(xmin), int(ymin), int(xmax), int(ymax)
     return xmin, ymin, xmax, ymax

@@ -2,24 +2,20 @@ from numpy.lib.arraypad import pad
 import pandas as pd
 import numpy as np
 
-
+from iqradre.segment.prod import SegmentationPredictor
 from iqradre.detect.pred import BoxesPredictor
+from iqradre.detect.ops import boxes as boxes_ops
 
 from iqradre.recog.prod import TextPredictor, TesseractPredictor
-from iqradre.recog.prod import utils as text_utils
 
 import transformers
 from transformers import BertTokenizer
 from iqradre.extract.prod.prod import Extractor
-
-
+from iqradre.extract.prod import utils as text_utils
 
 import matplotlib.pyplot as plt
-from iqradre.detect.ops import boxes as boxes_ops
 # from iqradre.detect.ops import box_ops
 # from iqradre.extract.ops import boxes_ops
-
-from iqradre.segment.prod import SegmentationPredictor
 
 from deskew import determine_skew
 from skimage.transform import rotate
@@ -29,10 +25,7 @@ from . import utils
 import torch
 import pathlib
 import PIL
-
 import time
-
-
 
 
 class IDCardPredictor(object):
@@ -88,14 +81,14 @@ class IDCardPredictor(object):
             outimg = utils.resize_pad(image, size=dsize, pad_color=pad_color)
         except:
             h,w = image.shape[:2]
-#             print(f'resize exception ori size:({h},{w})')
+            print(f'resize exception ori size:({h},{w})')
             ratio = h/w
             if ratio<1.3:
                 nh = int(h * 1.3)
                 dim = (nh, w)
                 outimg = cv.resize(image, dim, interpolation=cv.INTER_LINEAR)
                 size = outimg.shape[:2]
-#                 print(f'resize Exception new size: {size}')
+                print(f'resize Exception new size: {size}')
         
         return outimg
     
@@ -137,7 +130,7 @@ class IDCardPredictor(object):
     
     def predict(self, impath, mode='mobile', resize=True, dsize=(1500,2000),
                 text_threshold=0.7, link_threshold=0.3, low_text=0.5, 
-                min_size_percent=5, is_auto_deskew=True):
+                min_size_percent=5,):
         
         
         if mode!='mobile':
@@ -148,13 +141,9 @@ class IDCardPredictor(object):
         segment_img = self._segment_predictor(impath)
         unet_etime = time.time()
         
-        
-        
         # CRAFT network
         craft_stime = time.time()
-        rot_img = segment_img
-        if is_auto_deskew:
-            rot_img, angle = self._auto_deskew(rot_img, resize=resize)
+        rot_img, angle = self._auto_deskew(segment_img, resize=resize)
         normalized_img = self._resize_normalize(rot_img, dsize=dsize)
         boxes_result = self._detect_boxes(normalized_img, 
                                           text_threshold=text_threshold,
@@ -180,15 +169,6 @@ class IDCardPredictor(object):
         layoutlm_etime = time.time()
         
 #         data, dframe, img, boxes_list, text_list, score_text, score_list
-
-        unet_time = unet_etime - unet_stime
-        craft_time = craft_etime - craft_stime
-        crnn_time = crnn_etime - crnn_stime
-        layoutlm_time = layoutlm_etime - layoutlm_stime
-        total_time = unet_time + craft_time + crnn_time + layoutlm_time
-        
-        
-        
         
         return {
             'prediction': data,
@@ -204,11 +184,10 @@ class IDCardPredictor(object):
             'score': score_text+score_link,
             'data_annoset': data_annoset,
             'times':{
-                'unet': f'{unet_time:.4f}s',
-                'craft': f'{craft_time:.4f}s',
-                'crnn': f'{layoutlm_time:.4f}s',
-                'layoutlm': f'{layoutlm_time:.4f}s',
-                'total':  f'{total_time:.4f}s'
+                'unet': f'{(unet_etime - unet_stime):.4f} s',
+                'craft': f'{(craft_etime - craft_stime):.4f} s',
+                'crnn': f'{(crnn_etime - crnn_stime):.4f} s',
+                'layoutlm': f'{(layoutlm_etime - layoutlm_stime):.4f} s',
             }
         }
         
@@ -218,7 +197,7 @@ class IDCardPredictor(object):
             
             import matplotlib.pyplot as plt
             plt.imshow(combined)
-#             print('segment_predictor size ==>',combined.size)
+            print('segment_predictor size ==>',combined.size)
             
             combined = combined.convert("RGB")
             result = np.array(combined).astype(np.uint8)
