@@ -171,8 +171,8 @@ class IDCardPredictor(object):
         layoutlm_etime = time.time()
         
         if use_scanline:
-            nama_sorted = PF.prediction_scanline_sorted(data, key="nama", key_stop="tempat")
-            alamat_sorted = PF.prediction_scanline_sorted(data, key="alamat", key_stop="rt/rw")
+            nama_sorted = PF.prediction_scanline_sorted(boxes_list, text_list, data, key="nama", key_stop="tempat")
+            alamat_sorted = PF.prediction_scanline_sorted(boxes_list, text_list, data, key="alamat", key_stop="rt/rw")
             data['nama'] = nama_sorted
             data['alamat'] = alamat_sorted
 #         data, dframe, img, boxes_list, text_list, score_text, score_list

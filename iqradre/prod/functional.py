@@ -71,9 +71,7 @@ def check_sequence_match(pred_line, scan_line):
     return is_safe
 
 
-def prediction_scanline_sorted(pred_data, key, key_stop):
-    boxes, texts, result = pred_data['boxes'], pred_data['texts'], pred_data['prediction']
-
+def prediction_scanline_sorted( boxes, texts, result, key, key_stop):
     scanline_data = scanline_sorted(boxes, texts)
     scan_line = scanline_search(scanline_data, key, key_stop)
     result_line = result[key].split(" ")
