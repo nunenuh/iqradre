@@ -180,7 +180,7 @@ class IDCardPredictor(object):
         return {
             'prediction': data,
             'dataframe':dframe,
-            'image': img,predict
+            'image': img,
             'segment_image': segment_img,
             'rotated_image': rot_img,
             'images_patch': images_patch,
