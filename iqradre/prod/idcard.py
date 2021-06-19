@@ -27,6 +27,8 @@ import pathlib
 import PIL
 import time
 
+from . import functional as PF
+
 
 class IDCardPredictor(object):
     def __init__(self, config, device='cpu', use_tesseract=False):
@@ -130,7 +132,7 @@ class IDCardPredictor(object):
     
     def predict(self, impath, mode='mobile', resize=True, dsize=(1500,2000),
                 text_threshold=0.7, link_threshold=0.3, low_text=0.5, 
-                min_size_percent=5,):
+                min_size_percent=5, use_scanline=True):
         
         
         if mode!='mobile':
@@ -168,6 +170,11 @@ class IDCardPredictor(object):
         dframe = pd.DataFrame(clean)
         layoutlm_etime = time.time()
         
+        if use_scanline:
+            nama_sorted = PF.prediction_scanline_sorted(data, key="nama", key_stop="tempat")
+            alamat_sorted = PF.prediction_scanline_sorted(data, key="alamat", key_stop="rt/rw")
+            data['nama'] = nama_sorted
+            data['alamat'] = alamat_sorted
 #         data, dframe, img, boxes_list, text_list, score_text, score_list
         
         return {
@@ -183,6 +190,7 @@ class IDCardPredictor(object):
             'score_list': score_link,
             'score': score_text+score_link,
             'data_annoset': data_annoset,
+            # 'scanline': scanline,
             'times':{
                 'unet': f'{(unet_etime - unet_stime):.4f} s',
                 'craft': f'{(craft_etime - craft_stime):.4f} s',
