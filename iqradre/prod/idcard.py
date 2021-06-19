@@ -180,7 +180,7 @@ class IDCardPredictor(object):
         return {
             'prediction': data,
             'dataframe':dframe,
-            'image': img,
+            'image': img,predict
             'segment_image': segment_img,
             'rotated_image': rot_img,
             'images_patch': images_patch,
@@ -203,8 +203,8 @@ class IDCardPredictor(object):
         if self.config.get('segmentor', False):
             image, mask, combined = self.segmentor.predict_canvas(impath, mask_color="#000000")
             
-            import matplotlib.pyplot as plt
-            plt.imshow(combined)
+            # import matplotlib.pyplot as plt
+            # plt.imshow(combined)
 #             print('segment_predictor size ==>',combined.size)
             
             combined = combined.convert("RGB")
