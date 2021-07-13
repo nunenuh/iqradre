@@ -47,10 +47,9 @@ def labels_map_process(label_name, label_type):
             if "VAL" in txt: nlabels.append(f'{ln}-{txt}')
     if "VAL" not in txt: nlabels.append(txt)
                 
-    labels = sorted(labels)
+    nlabels = sorted(nlabels)
     
-    
-    return labels
+    return nlabels
 
 
 label_map = labels_map_process(base_label_name, base_label_type)
