@@ -249,6 +249,19 @@ class IDCardBaseDataset(dataset.Dataset):
     def __len__(self):
         return len(self.names)
     
+    def get_base(self, idx):
+        record = self._get_data(idx)
+        anno = self._load_anno(record['anno'])
+        if not self.excluce_image_mask:
+            img = self._load_image(record['image'])
+            
+        anno_objects = utils.format_annotation_objects(
+            anno, self.tokenizer, self.max_seq_length,
+            rand_seq=self.rand_seq, rand_seq_prob=self.rand_seq_prob
+        )
+            
+        return img, anno, anno_objects
+    
     def __getitem__(self, idx):
         record = self._get_data(idx)
         anno = self._load_anno(record['anno'])
