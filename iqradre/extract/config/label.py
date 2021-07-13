@@ -29,15 +29,27 @@ base_label_type = {
     "delimiter": "O"
 }
 
+line_number = ['L0','L1','L2']
+
 def labels_map_process(label_name, label_type):
     labels=[]
-    for kn,vn in label_name.items():
-        for kt,vt in label_type.items():
+    for kn, vn in label_name.items():
+        for kt, vt in label_type.items():
             if kt!='delimiter':
                 for bil in "BILU":
                     name = f'{bil}-{vt}_{vn}'
                     labels.append(name)
     labels.append("O")
+    
+    nlabels = []
+    for idx, txt in enumerate(labels):
+        for ln in line_number:
+            if "VAL" in txt: nlabels.append(f'{ln}-{txt}')
+    if "VAL" not in txt: nlabels.append(txt)
+                
+    labels = sorted(labels)
+    
+    
     return labels
 
 
