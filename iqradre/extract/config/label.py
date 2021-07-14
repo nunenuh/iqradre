@@ -45,7 +45,7 @@ def labels_map_process(label_name, label_type):
     for idx, txt in enumerate(labels):
         for ln in line_number:
             if "VAL" in txt: nlabels.append(f'{ln}-{txt}')
-    if "VAL" not in txt: nlabels.append(txt)
+        if not ("VAL" in txt): nlabels.append(txt)
                 
     nlabels = sorted(nlabels)
     

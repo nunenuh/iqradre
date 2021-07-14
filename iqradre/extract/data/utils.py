@@ -95,8 +95,17 @@ def format_annotation_objects(anno, tokenizer, max_seq_length=512, rand_seq=Fals
     for obj in objects:
         tokens.append(obj['token'])
         labels.append(obj['label'])
+        
+        line_number = obj['line']
+        ln = f'L{line_number}'
+        last_label = obj['label'].split("-")[-1]
+        if "VAL" in last_label:
+            lt = obj['label']
+            label_text = f'{ln}-{lt}'
+        else:
+            label_text = obj['label']
 
-        lab = label_cfg.label_to_idx[obj['label']]
+        lab = label_cfg.label_to_idx[label_text]
         label_ids.append(lab)
 
         pts = obj['points']
